@@ -2,22 +2,27 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Search = () => {
-    const [term, setTerm] = useState('プログラミング');
-    const [debouncedTerm, setDebouncedTerm] = useState('プログラミング');
+    const [term, setTerm] = useState('programming');
+    const [debouncedTerm, setDebouncedTerm] = useState(term);
     const [results, setResults] = useState([]);
 
     useEffect(() => {
         const timerId = setTimeout(() => {
             setDebouncedTerm(term);
-        }, 1000);
+        }, 500);
 
         return () => {
             clearTimeout(timerId);
         };
     }, [term]);
 
+
     useEffect(() => {
         const search = async () => {
+            if (!term) {
+                return;
+            }
+
             const { data } = await axios.get('https://ja.wikipedia.org/w/api.php', {
                 params: {
                     action: 'query',
@@ -25,25 +30,26 @@ const Search = () => {
                     origin: '*',
                     format: 'json',
                     srsearch: debouncedTerm,
-                }
+                },
             });
 
             setResults(data.query.search);
         };
 
         search();
+
     }, [debouncedTerm]);
 
     const renderedResults = results.map((result) => {
         return (
             <div key={result.pageid} className="item">
-                <div className="right floated cotnent">
+                <div className="right floated content">
                     <a
                         className="ui button"
-                        href={`https://ja.wikipedia.org?cruid=${result.pageid}`}
+                        href={`https://ja.wikipedia.org?curid=${result.pageid}`}
                     >
                         Go
-                    </a>
+          </a>
                 </div>
                 <div className="content">
                     <div className="header">{result.title}</div>
@@ -57,17 +63,17 @@ const Search = () => {
         <div>
             <div className="ui form">
                 <div className="field">
-                    <label>Enter Search Term</label>
+                    <label>Enter Search Term in Wikipedeia</label>
                     <input
                         value={term}
-                        onChange={e => setTerm(e.target.value)}
+                        onChange={(e) => setTerm(e.target.value)}
                         className="input"
                     />
                 </div>
             </div>
             <div className="ui celled list">{renderedResults}</div>
         </div>
-    )
+    );
 };
 
 export default Search;
